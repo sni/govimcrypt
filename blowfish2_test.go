@@ -3,13 +3,11 @@ package vimcrypt_test
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/sni/vimcrypt"
 )
 
@@ -87,11 +85,4 @@ func testFile(t *testing.T, file string, cipher []byte, expect string) {
 	if buf.String() != expect {
 		t.Errorf("expected '%s', but got '%s'", expect, buf.String())
 	}
-}
-
-func Dump(v interface{}) {
-	spew.Config.Indent = "\t"
-	spew.Config.MaxDepth = 3
-	spew.Config.DisableMethods = true
-	fmt.Fprint(os.Stderr, spew.Sdump(v))
 }
