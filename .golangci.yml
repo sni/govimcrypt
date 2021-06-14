@@ -1,0 +1,30 @@
+linters-settings:
+  gocyclo:
+    min-complexity: 20
+  goconst:
+    min-len: 8
+    min-occurrences: 12
+  lll:
+    line-length: 120
+  gocritic:
+    enabled-tags:
+      - performance
+      - style
+      - experimental
+    settings:
+      rangeValCopy:
+        sizeThreshold: 32
+  exhaustive:
+    default-signifies-exhaustive: true
+linters:
+  enable-all: true
+  disable:
+    - wsl
+    - gofumpt
+    - nlreturn
+  fast: false
+issues:
+  max-same-issues: 0
+  exclude-use-default: true
+  exclude:
+    - "package golang.org/x/crypto/blowfish is deprecated"
