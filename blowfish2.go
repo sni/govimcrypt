@@ -13,8 +13,8 @@ import (
 type cryptDirection int
 
 const (
-	Encrypt cryptDirection = iota
-	Decrypt
+	bfEncrypt cryptDirection = iota
+	bfDecrypt
 )
 
 func NewBlowfish2(key, salt []byte, mode cryptDirection) (func(io.Reader) ([]byte, error), error) {
@@ -45,9 +45,9 @@ func NewBlowfish2(key, salt []byte, mode cryptDirection) (func(io.Reader) ([]byt
 			decryped = append(decryped, buf[:n]...)
 
 			switch mode {
-			case Encrypt:
+			case bfEncrypt:
 				block0 = buf[:n]
-			case Decrypt:
+			case bfDecrypt:
 				block0 = block1
 			}
 			block1 = make([]byte, blocksize)

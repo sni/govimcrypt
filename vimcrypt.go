@@ -64,7 +64,7 @@ func (z *Reader) readHeader(key []byte) (err error) {
 			return fmt.Errorf("invalid header, could not read salt: %w", err)
 		}
 		salt := buf[0:8]
-		z.decompressor, err = NewBlowfish2(key, salt, Decrypt)
+		z.decompressor, err = NewBlowfish2(key, salt, bfDecrypt)
 		if err != nil {
 			return fmt.Errorf("failed to initialize blowfish2 decrypt: %w", err)
 		}
@@ -92,7 +92,7 @@ func NewWriter(w io.Writer, key []byte) (*Writer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("getting seed failed: %w", err)
 	}
-	z.decompressor, err = NewBlowfish2(key, z.salt, Encrypt)
+	z.decompressor, err = NewBlowfish2(key, z.salt, bfEncrypt)
 	if err != nil {
 		return nil, fmt.Errorf("blowfish2 init failed: %w", err)
 	}

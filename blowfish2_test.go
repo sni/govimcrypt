@@ -41,7 +41,10 @@ func TestBlowfish2Write(t *testing.T) {
 	if err != nil {
 		t.Fatalf("creating writer failed: %s", err)
 	}
-	enc.Write([]byte(content))
+	_, err = enc.Write([]byte(content))
+	if err != nil {
+		t.Fatalf("writer failed: %s", err)
+	}
 
 	dec, err := vimcrypt.NewReader(buf, cipher)
 	if err != nil {
