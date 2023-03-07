@@ -105,8 +105,7 @@ racetest: fmt
 
 clean:
 	rm -rf vendor
-	rm -rf tools
-	rm -rf naemon-vault-neb-example
+	rm -rf $(TOOLSFOLDER)
 
 fmt: tools
 	goimports -w *.go
@@ -121,7 +120,7 @@ versioncheck:
 		exit 1; \
 	}
 
-golangci:
+golangci: tools
 	#
 	# golangci combines a few static code analyzer
 	# See https://github.com/golangci/golangci-lint

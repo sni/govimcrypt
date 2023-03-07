@@ -100,7 +100,7 @@ func NewWriter(w io.Writer, key []byte) (*Writer, error) {
 }
 
 func (z *Writer) Write(b []byte) (n int, err error) {
-	_, err = z.originWriter.Write([]byte(fmt.Sprintf("%s03!%s%s", cryptPrefix, z.salt, z.seed)))
+	_, err = fmt.Fprintf(z.originWriter, "%s03!%s%s", cryptPrefix, z.salt, z.seed)
 	if err != nil {
 		return 0, fmt.Errorf("write failed: %w", err)
 	}

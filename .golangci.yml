@@ -22,9 +22,13 @@ linters:
     - wsl
     - gofumpt
     - nlreturn
+    - nonamedreturns
+    - varnamelen
   fast: false
 issues:
   max-same-issues: 0
   exclude-use-default: true
   exclude:
-    - "package golang.org/x/crypto/blowfish is deprecated"
+    - "any new system should use AES"
+    - 'Magic number: 8\D '
+    - 'Magic number: 512\D '
