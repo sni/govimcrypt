@@ -37,7 +37,7 @@ func NewBlowfish2(key, salt []byte, mode cryptDirection) (func(io.Reader) ([]byt
 			stream = cipher.NewCFBDecrypter(bfCipher, iv)
 		}
 		sReader := &cipher.StreamReader{S: stream, R: reader}
-		return io.ReadAll(sReader) // nolint: wrapcheck
+		return io.ReadAll(sReader) //nolint:wrapcheck // caller wraps
 	}
 	return decrypt, nil
 }
@@ -50,7 +50,7 @@ func buildBlowfish2Cipher(key, salt []byte) (cipher.Block, error) {
 	}
 	hash := sha256.Sum256(append(pw, salt...))
 	bfCipher, err := blowfish.NewCipher(hash[:])
-	return &VimBlowfish{bfCipher}, err // nolint: wrapcheck
+	return &VimBlowfish{bfCipher}, err //nolint:wrapcheck // can't happen
 }
 
 // VimBlowfish is the blowfish cipher, with an endianness conversion.
