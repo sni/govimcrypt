@@ -19,42 +19,25 @@ const (
 )
 
 func NewBlowfish2(key, salt []byte, mode cryptDirection) (func(io.Reader) ([]byte, error), error) {
-	cipher, err := buildBlowfish2Cipher(key, salt)
+	bfCipher, err := buildBlowfish2Cipher(key, salt)
 	if err != nil {
 		return nil, err
 	}
-	blocksize := cipher.BlockSize()
-	decrypt := func(reader io.Reader) (decryped []byte, err error) {
-		block0 := make([]byte, blocksize)
-		n, err := io.ReadFull(reader, block0)
+	decrypt := func(reader io.Reader) ([]byte, error) {
+		iv := make([]byte, bfCipher.BlockSize())
+		n, err := io.ReadFull(reader, iv)
 		if err != nil && n == 0 {
-			return
+			return nil, err
 		}
-		block1 := make([]byte, blocksize)
-		n, err = io.ReadFull(reader, block1)
-		if err != nil && n == 0 {
-			return
-		}
-		err = nil
 
-		for {
-			buf := append([]byte(nil), block0...)
-			cipher.Encrypt(buf, buf)
-			xorBytes(buf, buf, block1, blocksize)
-			decryped = append(decryped, buf[:n]...)
-
-			switch mode {
-			case bfEncrypt:
-				block0 = buf[:n]
-			case bfDecrypt:
-				block0 = block1
-			}
-			block1 = make([]byte, blocksize)
-			n, _ = io.ReadFull(reader, block1)
-			if n == 0 {
-				return
-			}
+		var stream cipher.Stream
+		if mode == bfEncrypt {
+			stream = cipher.NewCFBEncrypter(bfCipher, iv)
+		} else {
+			stream = cipher.NewCFBDecrypter(bfCipher, iv)
 		}
+		sReader := &cipher.StreamReader{S: stream, R: reader}
+		return io.ReadAll(sReader)
 	}
 	return decrypt, nil
 }
@@ -67,13 +50,10 @@ func buildBlowfish2Cipher(key, salt []byte) (cipher.Block, error) {
 	}
 	hash := sha256.Sum256(append(pw, salt...))
 	bfCipher, err := blowfish.NewCipher(hash[:])
-	if err != nil {
-		return nil, err
-	}
-	cipher := &VimBlowfish{bfCipher}
-	return cipher, nil
+	return &VimBlowfish{bfCipher}, err
 }
 
+// VimBlowfish is the blowfish cipher, with an endianness conversion.
 type VimBlowfish struct {
 	*blowfish.Cipher
 }
@@ -81,6 +61,13 @@ type VimBlowfish struct {
 func (vbf *VimBlowfish) Encrypt(dst, src []byte) {
 	convertEndian(src, src)
 	vbf.Cipher.Encrypt(dst, src)
+	convertEndian(dst, dst)
+}
+
+func (vbf *VimBlowfish) Decrypt(dst, src []byte) {
+	// We provide Decrypt but note crypto/cipher.cfb only uses Encrypt.
+	convertEndian(src, src)
+	vbf.Cipher.Decrypt(dst, src)
 	convertEndian(dst, dst)
 }
 
@@ -100,10 +87,4 @@ func convertEndian(out, in []byte) {
 	// convert uint32 to byte array
 	binary.BigEndian.PutUint32(out, v1)
 	binary.BigEndian.PutUint32(out[4:], v2)
-}
-
-func xorBytes(dst, a, b []byte, n int) {
-	for i := 0; i < n; i++ {
-		dst[i] = a[i] ^ b[i]
-	}
 }
