@@ -49,7 +49,7 @@ func readHeader(originReader io.Reader, key []byte) (io.Reader, error) {
 		}
 		salt := buf[0:8]
 		seed := buf[8:16]
-		decryptingReader, err := NewBlowfish2Reader(key, salt, seed, originReader)
+		decryptingReader, err := newBlowfish2Reader(key, salt, seed, originReader)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize blowfish2 decrypt: %w", err)
 		}
@@ -71,7 +71,7 @@ func NewWriter(writer io.Writer, key []byte) (io.Writer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("writing header failed: %w", err)
 	}
-	encryptingWriter, err := NewBlowfish2Writer(key, salt, seed, writer)
+	encryptingWriter, err := newBlowfish2Writer(key, salt, seed, writer)
 	if err != nil {
 		return nil, fmt.Errorf("blowfish2 init failed: %w", err)
 	}

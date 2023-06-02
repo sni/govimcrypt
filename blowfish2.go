@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/blowfish"
 )
 
-func NewBlowfish2Reader(key, salt, seed []byte, reader io.Reader) (io.Reader, error) {
+func newBlowfish2Reader(key, salt, seed []byte, reader io.Reader) (io.Reader, error) {
 	bfCipher, err := buildBlowfish2Cipher(key, salt)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func NewBlowfish2Reader(key, salt, seed []byte, reader io.Reader) (io.Reader, er
 	return &cipher.StreamReader{S: stream, R: reader}, nil
 }
 
-func NewBlowfish2Writer(key, salt, seed []byte, writer io.Writer) (io.Writer, error) {
+func newBlowfish2Writer(key, salt, seed []byte, writer io.Writer) (io.Writer, error) {
 	bfCipher, err := buildBlowfish2Cipher(key, salt)
 	if err != nil {
 		return nil, err
