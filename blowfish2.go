@@ -11,35 +11,22 @@ import (
 	"golang.org/x/crypto/blowfish"
 )
 
-type cryptDirection int
-
-const (
-	bfEncrypt cryptDirection = iota
-	bfDecrypt
-)
-
-func NewBlowfish2(key, salt []byte, mode cryptDirection) (func(io.Reader) ([]byte, error), error) {
+func NewBlowfish2Reader(key, salt, seed []byte, reader io.Reader) (io.Reader, error) {
 	bfCipher, err := buildBlowfish2Cipher(key, salt)
 	if err != nil {
 		return nil, err
 	}
-	decrypt := func(reader io.Reader) ([]byte, error) {
-		iv := make([]byte, bfCipher.BlockSize())
-		n, err := io.ReadFull(reader, iv)
-		if err != nil && n == 0 {
-			return nil, err //nolint:wrapcheck // interface requires raw io.EOF, no wrapping
-		}
+	stream := cipher.NewCFBDecrypter(bfCipher, seed)
+	return &cipher.StreamReader{S: stream, R: reader}, nil
+}
 
-		var stream cipher.Stream
-		if mode == bfEncrypt {
-			stream = cipher.NewCFBEncrypter(bfCipher, iv)
-		} else {
-			stream = cipher.NewCFBDecrypter(bfCipher, iv)
-		}
-		sReader := &cipher.StreamReader{S: stream, R: reader}
-		return io.ReadAll(sReader) //nolint:wrapcheck // caller wraps
+func NewBlowfish2Writer(key, salt, seed []byte, writer io.Writer) (io.Writer, error) {
+	bfCipher, err := buildBlowfish2Cipher(key, salt)
+	if err != nil {
+		return nil, err
 	}
-	return decrypt, nil
+	stream := cipher.NewCFBEncrypter(bfCipher, seed)
+	return &cipher.StreamWriter{S: stream, W: writer, Err: nil}, nil
 }
 
 func buildBlowfish2Cipher(key, salt []byte) (cipher.Block, error) {
