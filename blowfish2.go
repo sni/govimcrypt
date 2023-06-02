@@ -27,7 +27,7 @@ func NewBlowfish2(key, salt []byte, mode cryptDirection) (func(io.Reader) ([]byt
 		iv := make([]byte, bfCipher.BlockSize())
 		n, err := io.ReadFull(reader, iv)
 		if err != nil && n == 0 {
-			return nil, fmt.Errorf("unable to read iv: %w", err)
+			return nil, err //nolint:wrapcheck // interface requires raw io.EOF, no wrapping
 		}
 
 		var stream cipher.Stream
