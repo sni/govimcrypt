@@ -20,12 +20,23 @@ func TestBlowfish2ReadFile1(t *testing.T) {
 
 	testFile(t, file, cipher, expect)
 }
+
 func TestBlowfish2ReadFile2(t *testing.T) {
 	t.Parallel()
 
 	file := "test/data/blowfish2/testtesttest"
 	cipher := []byte("testtesttest")
 	expect := "test file with longer key\n"
+
+	testFile(t, file, cipher, expect)
+}
+
+func TestBlowfish2ReadFile_Large(t *testing.T) {
+	t.Parallel()
+
+	file := "test/data/blowfish2/40k"
+	cipher := []byte("test")
+	expect := strings.Repeat("A", 40000) + "\n"
 
 	testFile(t, file, cipher, expect)
 }
