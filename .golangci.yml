@@ -25,6 +25,7 @@ linters:
     - nonamedreturns
     - varnamelen
     - depguard
+    - perfsprint
   fast: false
 issues:
   max-same-issues: 0
