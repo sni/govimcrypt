@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sni/govimcrypt"
+	vimcrypt "github.com/sni/govimcrypt"
 )
 
 func TestBlowfish2ReadFile1(t *testing.T) {

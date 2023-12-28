@@ -39,7 +39,7 @@ To read the file with vim again, you don't need to specify -x again:
 
 ```golang
 import (
-    "github.com/sni/govimcrypt"
+    vimcrypt "github.com/sni/govimcrypt"
 )
 
 password := []byte("secret")
@@ -56,7 +56,7 @@ fmt.Printf("decrypted content is: %s", decrypted.String())
 
 ```golang
 import (
-    "github.com/sni/govimcrypt"
+    vimcrypt "github.com/sni/govimcrypt"
 )
 
 password := []byte("secret")
