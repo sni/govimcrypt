@@ -1,4 +1,4 @@
-module github.com/sni/vimcrypt
+module github.com/sni/govimcrypt
 
 go 1.20
 
