@@ -9,8 +9,10 @@ import (
 
 const cryptPrefix = "VimCrypt~"
 
-var errNotVimEncrypted = errors.New("data is not vim encrypted")
-var errUnsupportedCryptMethod = errors.New("unsupported crypto method")
+var (
+	errNotVimEncrypted        = errors.New("data is not vim encrypted")
+	errUnsupportedCryptMethod = errors.New("unsupported crypto method")
+)
 
 func NewReader(reader io.Reader, key []byte) (io.Reader, error) {
 	decryptingReader, err := readHeader(reader, key)

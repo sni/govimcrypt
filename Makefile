@@ -6,59 +6,54 @@ GOVERSION:=$(shell \
     go version | \
     awk -F'go| ' '{ split($$5, a, /\./); printf ("%04d%04d", a[1], a[2]); exit; }' \
 )
-# also update README.md when changing minumum version
-MINGOVERSION:=00010020
-MINGOVERSIONSTR:=1.20
-BUILD:=$(shell git rev-parse --short HEAD)
+# also update README.md and .github/workflows/citest.yml when changing minumum version
+MINGOVERSION:=00010021
+MINGOVERSIONSTR:=1.21
 # see https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
 # and https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
 TOOLSFOLDER=$(shell pwd)/tools
 export GOBIN := $(TOOLSFOLDER)
 export PATH := $(GOBIN):$(PATH)
-
-.PHONY: vendor
+GO=go
 
 all: build
 
-tools: versioncheck vendor dump
-	go mod download
+tools: | versioncheck vendor
+	$(GO) mod download
 	set -e; for DEP in $(shell grep "_ " buildtools/tools.go | awk '{ print $$2 }'); do \
-		go install $$DEP; \
+		( cd buildtools && $(GO) install $$DEP@latest ) ; \
 	done
-	go mod tidy
-	go mod vendor
+	( cd buildtools && $(GO) mod tidy )
 
 updatedeps: versioncheck
 	$(MAKE) clean
-	go mod download
-	set -e; for DEP in $(shell grep "_ " buildtools/tools.go | awk '{ print $$2 }'); do \
-		go get $$DEP; \
-	done
-	go get -u ./...
-	go get -t -u ./...
-	go mod tidy
+	$(MAKE) tools
+	$(GO) mod download
+	$(GO) get -u
+	$(GO) get -t -u
+	$(MAKE) cleandeps
+
+cleandeps:
+	$(GO) mod tidy
+	( cd buildtools && $(GO) mod tidy )
 
 vendor:
-	go mod download
-	go mod tidy
-	go mod vendor
-
-dump:
-	if [ $(shell grep -rc Dump ./*.go | grep -v :0 | grep -v dump.go | wc -l) -ne 0 ]; then \
-		sed -i.bak 's/\/\/ +build.*/\/\/ build with debug functions/' ./dump.go; \
-	else \
-		sed -i.bak 's/\/\/ build.*/\/\/ +build ignore/' ./dump.go; \
-	fi
-	rm -f ./dump.go.bak
+	$(GO) mod download
+	$(GO) mod tidy
+	$(GO) mod vendor
 
 build:
 	@echo "this is a library, run make test to run tests."
 
-test: fmt dump vendor
-	go test -v
-	if grep -rn TODO: *.go; then exit 1; fi
+test: vendor
+	$(GO) test -v .
+	if grep -Irn TODO: *.go ; then exit 1; fi
 
-citest: vendor
+# test with filter
+testf: vendor
+	$(GO) test -v . -run "$(filter-out $@,$(MAKECMDGOALS))" 2>&1 | grep -v "no test files" | grep -v "no tests to run" | grep -v "^PASS"
+
+citest: tools vendor
 	#
 	# Checking gofmt errors
 	#
@@ -72,13 +67,10 @@ citest: vendor
 	#
 	if grep -rn TODO: *.go; then exit 1; fi
 	#
-	# Checking remaining debug calls
-	#
-	if grep -rn Dump *.go | grep -v dump.go; then exit 1; fi
-	#
 	# Run other subtests
 	#
 	$(MAKE) golangci
+	-$(MAKE) govulncheck
 	$(MAKE) fmt
 	#
 	# Normal test cases
@@ -95,27 +87,38 @@ citest: vendor
 	#
 	# All CI tests successfull
 	#
-	go mod tidy
 
-benchmark: fmt
-	go test -ldflags "-s -w -X main.Build=$(BUILD)" -v -bench=B\* -benchtime 10s -run=^$$ . -benchmem
+benchmark:
+	$(GO) test -v -bench=B\* -run=^$$ -benchmem .
 
-racetest: fmt
-	go test -race -short -v
+racetest:
+	go test -race -v .
+
+covertest:
+	$(GO) test -v -coverprofile=cover.out .
+	$(GO) tool cover -func=cover.out
+	$(GO) tool cover -html=cover.out -o coverage.html
+
+coverweb:
+	$(GO) test -v -coverprofile=cover.out .
+	$(GO) tool cover -html=cover.out
 
 clean:
 	rm -rf vendor
 	rm -rf $(TOOLSFOLDER)
 
+GOVET=$(GO) vet -all
 fmt: tools
-	goimports -w *.go
-	go vet -all -assign -atomic -bool -composites -copylocks -nilfunc -rangeloops -unsafeptr -unreachable .
+	$(GOVET) .
 	gofmt -w -s *.go
+	./tools/gofumpt -w *.go
+	./tools/gci write *.go  --skip-generated
+	goimports -w *.go
 
 versioncheck:
 	@[ $$( printf '%s\n' $(GOVERSION) $(MINGOVERSION) | sort | head -n 1 ) = $(MINGOVERSION) ] || { \
 		echo "**** ERROR:"; \
-		echo "**** NEB module requires at least golang version $(MINGOVERSIONSTR) or higher"; \
+		echo "**** govimcrypt library requires at least golang version $(MINGOVERSIONSTR) or higher"; \
 		echo "**** this is: $$(go version)"; \
 		exit 1; \
 	}
@@ -125,5 +128,16 @@ golangci: tools
 	# golangci combines a few static code analyzer
 	# See https://github.com/golangci/golangci-lint
 	#
-	golangci-lint run ./...
+	golangci-lint run *.go
 
+govulncheck: tools
+	govulncheck ./...
+
+# just skip unknown make targets
+.DEFAULT:
+	@if [[ "$(MAKECMDGOALS)" =~ ^testf ]]; then \
+		: ; \
+	else \
+		echo "unknown make target(s): $(MAKECMDGOALS)"; \
+		exit 1; \
+	fi

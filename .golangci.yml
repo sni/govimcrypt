@@ -1,4 +1,9 @@
 linters-settings:
+  gocritic:
+    enabled-tags:
+      - performance
+      - style
+      - experimental
   gocyclo:
     min-complexity: 20
   goconst:
@@ -6,29 +11,34 @@ linters-settings:
     min-occurrences: 12
   lll:
     line-length: 120
-  gocritic:
-    enabled-tags:
-      - performance
-      - style
-      - experimental
-    settings:
-      rangeValCopy:
-        sizeThreshold: 32
+  govet:
+    check-shadowing: true
   exhaustive:
     default-signifies-exhaustive: true
 linters:
   enable-all: true
+  fast: false
   disable:
-    - wsl
-    - gofumpt
+    - depguard
     - nlreturn
     - nonamedreturns
-    - varnamelen
-    - depguard
     - perfsprint
-  fast: false
+    - varnamelen
+    - wsl
+    # deprecated
+    - deadcode
+    - ifshort
+    - interfacer
+    - exhaustivestruct
+    - maligned
+    - structcheck
+    - varcheck
+    - scopelint
+    - nosnakecase
+    - golint
 issues:
   max-same-issues: 0
+  max-issues-per-linter: 0
   exclude-use-default: true
   exclude:
     - "any new system should use AES"
