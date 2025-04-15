@@ -7,8 +7,8 @@ GOVERSION:=$(shell \
     awk -F'go| ' '{ split($$5, a, /\./); printf ("%04d%04d", a[1], a[2]); exit; }' \
 )
 # also update README.md and .github/workflows/citest.yml when changing minumum version
-MINGOVERSION:=00010021
-MINGOVERSIONSTR:=1.21
+MINGOVERSION:=00010023
+MINGOVERSIONSTR:=1.23
 # see https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
 # and https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
 TOOLSFOLDER=$(shell pwd)/tools
@@ -18,10 +18,12 @@ GO=go
 
 all: build
 
-tools: | versioncheck vendor
-	$(GO) mod download
-	set -e; for DEP in $(shell grep "_ " buildtools/tools.go | awk '{ print $$2 }'); do \
+tools: | versioncheck
+	set -e; for DEP in $(shell grep "_ " buildtools/tools.go | awk '{ print $$2 }' | grep -v go-spew); do \
 		( cd buildtools && $(GO) install $$DEP@latest ) ; \
+	done
+	set -e; for DEP in $(shell grep "_ " buildtools/tools.go | awk '{ print $$2 }' | grep go-spew); do \
+		( cd buildtools && $(GO) install $$DEP ) ; \
 	done
 	( cd buildtools && $(GO) mod tidy )
 
@@ -31,6 +33,7 @@ updatedeps: versioncheck
 	$(GO) mod download
 	$(GO) get -u
 	$(GO) get -t -u
+	$(GO) mod download
 	$(MAKE) cleandeps
 
 cleandeps:

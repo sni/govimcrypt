@@ -11,8 +11,6 @@ linters-settings:
     min-occurrences: 12
   lll:
     line-length: 120
-  govet:
-    check-shadowing: true
   exhaustive:
     default-signifies-exhaustive: true
 linters:
@@ -26,16 +24,7 @@ linters:
     - varnamelen
     - wsl
     # deprecated
-    - deadcode
-    - ifshort
-    - interfacer
-    - exhaustivestruct
-    - maligned
-    - structcheck
-    - varcheck
-    - scopelint
-    - nosnakecase
-    - golint
+    - tenv
 issues:
   max-same-issues: 0
   max-issues-per-linter: 0
