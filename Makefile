@@ -134,6 +134,7 @@ golangci: tools
 	golangci-lint run *.go
 
 govulncheck: tools
+	govulncheck -version
 	govulncheck ./...
 
 # just skip unknown make targets
