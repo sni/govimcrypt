@@ -2,18 +2,12 @@ name: citest
 on: [push, pull_request]
 jobs:
   test:
-    strategy:
-      matrix:
-        go-version:
-          - 1.21.x
-          - 1.22.x
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v6
       with:
-        go-version: ${{ matrix.go-version }}
-    - uses: actions/checkout@v2
+        go-version-file: './go.mod'
+    - uses: actions/checkout@v6
     - run: make clean
     - run: make citest
