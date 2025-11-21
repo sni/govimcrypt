@@ -31,5 +31,7 @@ issues:
   exclude-use-default: true
   exclude:
     - "any new system should use AES"
+    - "SA1019: cipher.NewCFBDecrypter has been deprecated"
+    - "SA1019: cipher.NewCFBEncrypter has been deprecated"
     - 'Magic number: 8\D '
     - 'Magic number: 512\D '
